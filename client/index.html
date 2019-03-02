@@ -248,9 +248,12 @@
       }
 
       function get_landmark_data(lat, lng, radius) {
+        // required variables for Foursquare API Calls
         var clientid = "5FZY1HN40ZTMOX4K42R25CVKCD5NLTH5ZFSUAFGFVE4GZYTQ";
         var clientsecret = "DQRBTVAPMUVKL5LWL515C0HKMPPD3WCKKRD4DATNRS2JM2PD";
-        var url = `https://api.foursquare.com/v2/venues/explore?client_id=${clientid}&client_secret=${clientsecret}&ll=${lat},${lng}&radius=${radius}&selection=outdoors&v=20190302`
+        var utc = new Date().toJSON().slice(0,10).replace(/-/g,'');
+        
+        var url = `https://api.foursquare.com/v2/venues/explore?client_id=${clientid}&client_secret=${clientsecret}&ll=${lat},${lng}&radius=${radius}&selection=outdoors&v=${utc}`
         httpGetAsync(url, parse_landmark_data)
       }
 
