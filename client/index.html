@@ -250,13 +250,13 @@
       function get_landmark_data(lat, lng, radius) {
         var clientid = "5FZY1HN40ZTMOX4K42R25CVKCD5NLTH5ZFSUAFGFVE4GZYTQ";
         var clientsecret = "DQRBTVAPMUVKL5LWL515C0HKMPPD3WCKKRD4DATNRS2JM2PD";
-        var url = `https://api.foursquare.com/v2/venues/explore?client_id=${clientid}&client_secret=${clientsecret}&ll=${lat},${lng}&radius=${radius}&selection=outdoors&v=20190302`
+        var url = `https://api.foursquare.com/v2/venues/explore?client_id=${clientid}&client_secret=${clientsecret}&ll=${lat},${lng}&radius=${radius}&query=popular+with+visitors&v=20190302`
         httpGetAsync(url, parse_landmark_data)
       }
 
       function parse_landmark_data(response) {
         var json_response = JSON.parse(response)
-        var landmarks = json_response["response"]["groups"]
+        var landmarks = json_response["response"]["groups"][0]["items"]
         console.log(landmarks)
       }
 
