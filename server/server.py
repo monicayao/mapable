@@ -4,6 +4,14 @@ import json
 
 PORT = 8000
 
+# The path algorithm
+def pathAlg(jsonObj):
+    startNode = jsonObj["startLocation"]
+    startHourStr = jsonObj["startTime"]
+    waitTime = {}
+    for key in 
+    # create complete graph
+
 class HTTPHandler(http.server.BaseHTTPRequestHandler):
     # every HTTP response needs a header
     def _set_headers(self):
@@ -33,14 +41,13 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
         input_obj = json.loads(post_body)
         print(input_obj)
         
-        # TODO : Handle Input Object
+        result = pathAlg(input_obj)
 
         self._set_headers()
-
-        # TODO : Make Response from Input
-        response = "Results updated in server"
+        response = result
         self.wfile.write(json.dumps(response).encode())
 
-with socketserver.TCPServer(("", PORT), HTTPHandler) as httpd:
-    print("serving at port", PORT)
-    httpd.serve_forever()
+if __name__ == "__main__":
+    with socketserver.TCPServer(("", PORT), HTTPHandler) as httpd:
+        print("serving at port", PORT)
+        httpd.serve_forever()

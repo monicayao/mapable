@@ -1,12 +1,15 @@
 {
-    "listOfLocations": [
-        ["LocName1", 60],
-        ["LocName2", 120],
-        ["LocName3", 30]
-    ],
+    "startLocation": "LocName1",
+    "startTime": "14:00",
+    "totalTime": 180,
+    "listOfLocations": {
+        "LocName1": 60,
+        "LocName2": 120,
+        "LocName3": 30
+    },
     "distanceInfo": [
         ["LocName1", "LocName2", 40],
         ["LocName1", "LocName3", 60],
-        ["LocName2", "LocName3", 10]
+        ["LocName2", "LocName3", 30]
     ]
 }
