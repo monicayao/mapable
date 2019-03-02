@@ -262,7 +262,10 @@
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.open( "GET", url, false ); // false for synchronous request
         xmlHttp.send( null );
-        return xmlHttp.responseText;
+        xmlHttp.onreadystatechange(e) = function() {
+          if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+            return xmlHttp.responseText;
+        }      
       }
 
       function handleLocationError(browserHasGeolocation, infoWindow, pos) {
