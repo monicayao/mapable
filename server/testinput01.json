@@ -1,0 +1,25 @@
+{
+    "startLocation": "LocName1",
+    "endLocation": "LocName4",
+    "startTime": "14:00",
+    "totalTime": 120,
+    "listOfLocations": {
+        "LocName1": 0,
+        "LocName2": 40,
+        "LocName3": 30,
+        "LocName4": 0,
+        "LocName5": 50
+    },
+    "distanceInfo": [
+        ["LocName1", "LocName2", 20],
+        ["LocName1", "LocName3", 20],
+        ["LocName1", "LocName4", 20],
+        ["LocName1", "LocName5", 20],
+        ["LocName2", "LocName3", 20],
+        ["LocName2", "LocName4", 20],
+        ["LocName2", "LocName5", 20],
+        ["LocName3", "LocName4", 20],
+        ["LocName3", "LocName5", 20],
+        ["LocName4", "LocName5", 20]
+    ]
+}
