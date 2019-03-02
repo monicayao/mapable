@@ -234,7 +234,7 @@
             var mid_lng = midLatLng.lng();
             // calculate the distance between the current position and destination
             var distance = google.maps.geometry.spherical.computeDistanceBetween(pos_marker.getPosition(), place.geometry.location)
-            parse_landmark_data(mid_lat, mid_lng, distance / 2)
+            get_landmark_data(mid_lat, mid_lng, distance / 2)
 
             if (place.geometry.viewport) {
               // Only geocodes have viewport.
@@ -247,25 +247,28 @@
         });
       }
 
-      function parse_landmark_data(lat, lng, radius) {
+      function get_landmark_data(lat, lng, radius) {
         var clientid = "5FZY1HN40ZTMOX4K42R25CVKCD5NLTH5ZFSUAFGFVE4GZYTQ";
         var clientsecret = "DQRBTVAPMUVKL5LWL515C0HKMPPD3WCKKRD4DATNRS2JM2PD";
-        console.log(radius)
-        var url = `https://api.foursquare.com/v2/venues/explore?client_id=${clientid}&client_secret=${clientsecret}&ll=${lat},${lng}&radius=${radius}&selection=sights&v=20190302`
-        var response = JSON.parse(httpGet(url))
-        var landmarks = response["response"]["groups"][0]["items"]
-        console.log(landmarks)
-        var len = landmarks.length
+        var url = `https://api.foursquare.com/v2/venues/explore?client_id=${clientid}&client_secret=${clientsecret}&ll=${lat},${lng}&radius=${radius}&selection=outdoors&v=20190302`
+        httpGetAsync(url, parse_landmark_data)
       }
 
-      function httpGet(url) {
+      function parse_landmark_data(response) {
+        var json_response = JSON.parse(response)
+        var landmarks = json_response["response"]["groups"]
+        console.log(landmarks)
+      }
+
+      function httpGetAsync(url, callback) {
         var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function() {
+          if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+            callback(xmlHttp.responseText)
+          }
+        } 
         xmlHttp.open( "GET", url, false ); // false for synchronous request
-        xmlHttp.send( null );
-        xmlHttp.onreadystatechange(e) = function() {
-          if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-            return xmlHttp.responseText;
-        }      
+        xmlHttp.send( null );  
       }
 
       function handleLocationError(browserHasGeolocation, infoWindow, pos) {
