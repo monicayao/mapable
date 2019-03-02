@@ -231,9 +231,9 @@
       // parameter when you first load the API. For example:
       // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
 
-      var pos, dest, time;
+      var pos, dest, time, map;
       function initAutocomplete() {
-        var map = new google.maps.Map(document.getElementById('map'), {
+        map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: -33.8688, lng: 151.2195},
           zoom: 13,
           mapTypeId: 'roadmap'
@@ -376,9 +376,49 @@
       }
 
       function parse_landmark_data(response) {
-        var json_response = JSON.parse(response)
-        var landmarks = json_response["response"]["groups"][0]["items"]
-        console.log(landmarks)
+        var json_response = (JSON.parse(response))["response"]["groups"][0]["items"]
+        landmarks = []
+
+        for (i = 0; i < json_response.length; i++) {
+            var entry = json_response[i]["venue"];
+            var name = entry.name;
+            var lat = entry["location"].lat;
+            var lng = entry["location"].lng;
+
+            landmark = {"name": name,
+              "location": {
+                "lat": lat,
+                "lng": lng
+              }
+            }
+            landmarks.push(landmark)
+        }
+        place_landmark_markers(landmarks)
+      }
+
+      function place_landmark_markers(landmarks) {
+        var markers = [];
+        for (i = 0; i < landmarks.length; i++) {
+          markers.push(new google.maps.Marker({position: landmarks[i]["location"], map: map}));
+        }
+
+        for (i = 0; i < markers.length; i++) {
+          var infowindow = new google.maps.InfoWindow;
+          var content = landmarks[i]["name"]
+
+          google.maps.event.addListener(markers[i],'mouseover', (function(marker,content,infowindow){ 
+            return function() {
+                infowindow.setContent('<p>' + content + '</p>');
+                infowindow.open(map,marker);
+            };
+          })(markers[i],content,infowindow));
+
+          google.maps.event.addListener(markers[i],'mouseout', (function(marker,infowindow){ 
+            return function() {
+              infowindow.close();
+            };
+          })(markers[i],infowindow));
+        }
       }
 
       function httpGetAsync(url, callback) {
