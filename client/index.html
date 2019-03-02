@@ -125,6 +125,7 @@
           zoom: 13,
           mapTypeId: 'roadmap'
         });
+
         var infoWindow = new google.maps.InfoWindow;
 
         if (navigator.geolocation) {
@@ -250,6 +251,7 @@
         var url = "https://reverse.geocoder.api.here.com/6.2/reversegeocode.json?app_id=EBPohOgad3NzKBTqKvZ5&app_code=bE6FdeBxWGtKTq-RZq6QBA&mode=retrieveLandmarks&prox="+lat+","+lng+","+radius
         var response = JSON.parse(httpGet(url))
         var landmarks = response["Response"]["View"][0]["Result"]
+        console.log(landmarks)
         var len = landmarks.length
       }
 
