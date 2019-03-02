@@ -175,6 +175,12 @@
       background-color: #4d90fe;
       color: white;
     }
+    
+    ul {
+      list-style-type: none;
+      width: 500px;
+    }
+    
 
     </style>
   </head>
@@ -189,8 +195,8 @@
             <h2>Choose Times</h2>
           </div>
           <div class="modal-body">
-            <p>Some text in the Modal Body</p>
-            <p>Some other text...</p>
+            <ul> 
+            </ul>
           </div>
         </div>
       </div>
@@ -386,6 +392,7 @@
             landmarks.push(landmark)
         }
         place_landmark_markers(landmarks)
+        loadList(landmarks)
       }
 
       function place_landmark_markers(landmarks) {
@@ -416,7 +423,18 @@
             modal.style.display = "block";
           }
           })(markers[i],modal));
+        }
+      }
 
+      var ul = document.querySelector("ul");
+      function loadList(landmarks){
+        for (var i = 0; i < landmarks.length; i++) {
+
+          var listItem = document.createElement("li");
+          listItem.textContent = landmarks[i]["name"];
+          
+          var inputBox = document.createElement("input");
+          ul.appendChild(listItem);
         }
       }
 
@@ -438,12 +456,9 @@
                               'Error: Your browser doesn\'t support geolocation.');
         infoWindow.open(map);
       }
-      
+
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBs1N1GVEiPePJmHMxaV0YJCknPg0d_FFI&libraries=places,geometry&callback=initAutocomplete"
          async defer></script>
   </body>
-  <footer>
-      <button id="myBtn">Open Modal</button>
-  </footer>
 </html>
