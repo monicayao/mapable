@@ -12,5 +12,13 @@
         ["LocName1", "LocName2", 40],
         ["LocName1", "LocName3", 60],
         ["LocName2", "LocName3", 30]
+    ],
+    "_comments": [
+        "totalTime -- the total time the user can spend",
+        "ListofLocations -- the amount of time the user",
+        "  wants to spend on each location (in min)",
+        "DistanceInfo -- contains an array [S1, S2, T1]",
+        "  S1, S2 are string names of two places",
+        "  T1 is the time to travel from S1 to S2 or vice versa."
     ]
 }
