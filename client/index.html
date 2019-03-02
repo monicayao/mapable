@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <title>Places Search Box</title>
     <style>
+      body {font-family: Roboto }
       /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
       #map {
@@ -104,12 +105,116 @@
         font-family: 'Roboto,Arial,sans-serif';
         color: rgb(25,25,25);
       }
+
+      /* The Modal (background) */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed; /* Stay in place */
+      z-index: 1; /* Sit on top */
+      padding-top: 100px; /* Location of the box */
+      left: 0;
+      top: 0;
+      width: 100%; /* Full width */
+      height: 100%; /* Full height */
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgb(0,0,0); /* Fallback color */
+      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    /* Modal Content */
+    .modal-content {
+      position: relative;
+      background-color: #fefefe;
+      margin: auto;
+      padding: 0;
+      border: 1px solid #888;
+      width: 80%;
+      box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+      -webkit-animation-name: animatetop;
+      -webkit-animation-duration: 0.4s;
+      animation-name: animatetop;
+      animation-duration: 0.4s
+    }
+
+    /* Add Animation */
+    @-webkit-keyframes animatetop {
+      from {top:-300px; opacity:0} 
+      to {top:0; opacity:1}
+    }
+
+    @keyframes animatetop {
+      from {top:-300px; opacity:0}
+      to {top:0; opacity:1}
+    }
+
+    /* The Close Button */
+    .close {
+      color: white;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: #000;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .modal-header {
+      padding: 2px 16px;
+      background-color: #4d90fe;
+      color: white;
+    }
+
+    .modal-body {padding: 2px 16px;}
+
+    .modal-footer {
+      padding: 2px 16px;
+      background-color: #4d90fe;
+      color: white;
+    }
+
     </style>
   </head>
   <body>
     <input id="pac-input" class="controls" type="text" placeholder="Search Box">
     <div id="map"></div>
+
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <span class="close">&times;</span>
+            <h2>Choose Times</h2>
+          </div>
+          <div class="modal-body">
+            <p>Some text in the Modal Body</p>
+            <p>Some other text...</p>
+          </div>
+        </div>
+      </div>
+
     <script>
+
+      // Get the modal
+      var modal = document.getElementById('myModal');
+
+      // Get the <span> element that closes the modal
+      var span = document.getElementsByClassName("close")[0];
+
+      // When the user clicks on <span> (x), close the modal
+      span.onclick = function() {
+        modal.style.display = "none";
+      }
+
+      // When the user clicks anywhere outside of the modal, close it
+      window.onclick = function(event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      }
+
       // This example adds a search box to a map, using the Google Place Autocomplete
       // feature. People can enter geographical searches. The search box will return a
       // pick list containing a mix of places and predicted search terms.
@@ -118,9 +223,9 @@
       // parameter when you first load the API. For example:
       // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
 
-      var pos, dest, time;
+      var pos, dest, time, map;
       function initAutocomplete() {
-        var map = new google.maps.Map(document.getElementById('map'), {
+        map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: -33.8688, lng: 151.2195},
           zoom: 13,
           mapTypeId: 'roadmap'
@@ -226,15 +331,21 @@
               icon: icon,
               title: place.name,
               position: pos
-            });      
-
+            });     
+          
             // calculate the mid-point between the current position and destination
             var midLatLng = google.maps.geometry.spherical.interpolate(pos_marker.getPosition(), place.geometry.location, 0.5);
             var mid_lat = midLatLng.lat();
             var mid_lng = midLatLng.lng();
             // calculate the distance between the current position and destination
             var distance = google.maps.geometry.spherical.computeDistanceBetween(pos_marker.getPosition(), place.geometry.location)
-            get_landmark_data(mid_lat, mid_lng, distance / 2)
+            get_landmark_data(mid_lat, mid_lng, distance / 2);
+
+            // reload the view of the map
+            var SW = new google.maps.LatLng(Math.min(pos_marker.getPosition().lat(), place.geometry.location.lat()),Math.min(pos_marker.getPosition().lng(), place.geometry.location.lng()));
+            var NE = new google.maps.LatLng(Math.max(pos_marker.getPosition().lat(), place.geometry.location.lat()),Math.max(pos_marker.getPosition().lng(), place.geometry.location.lng()));
+            bounds = new google.maps.LatLngBounds(SW, NE);
+
 
             if (place.geometry.viewport) {
               // Only geocodes have viewport.
@@ -252,15 +363,61 @@
         var clientid = "5FZY1HN40ZTMOX4K42R25CVKCD5NLTH5ZFSUAFGFVE4GZYTQ";
         var clientsecret = "DQRBTVAPMUVKL5LWL515C0HKMPPD3WCKKRD4DATNRS2JM2PD";
         var utc = new Date().toJSON().slice(0,10).replace(/-/g,'');
-        
-        var url = `https://api.foursquare.com/v2/venues/explore?client_id=${clientid}&client_secret=${clientsecret}&ll=${lat},${lng}&radius=${radius}&selection=outdoors&v=${utc}`
+        var url = `https://api.foursquare.com/v2/venues/explore?client_id=${clientid}&client_secret=${clientsecret}&ll=${lat},${lng}&radius=${radius}&query=popular+with+visitors&v=${utc}`
         httpGetAsync(url, parse_landmark_data)
       }
 
       function parse_landmark_data(response) {
-        var json_response = JSON.parse(response)
-        var landmarks = json_response["response"]["groups"]
-        console.log(landmarks)
+        var json_response = (JSON.parse(response))["response"]["groups"][0]["items"]
+        landmarks = []
+
+        for (i = 0; i < json_response.length; i++) {
+            var entry = json_response[i]["venue"];
+            var name = entry.name;
+            var lat = entry["location"].lat;
+            var lng = entry["location"].lng;
+
+            landmark = {"name": name,
+              "location": {
+                "lat": lat,
+                "lng": lng
+              }
+            }
+            landmarks.push(landmark)
+        }
+        place_landmark_markers(landmarks)
+      }
+
+      function place_landmark_markers(landmarks) {
+        var markers = [];
+        for (i = 0; i < landmarks.length; i++) {
+          markers.push(new google.maps.Marker({position: landmarks[i]["location"], map: map}));
+        }
+
+        for (i = 0; i < markers.length; i++) {
+          var infowindow = new google.maps.InfoWindow;
+          var content = landmarks[i]["name"]
+
+          google.maps.event.addListener(markers[i],'mouseover', (function(marker,content,infowindow){ 
+            return function() {
+                infowindow.setContent('<p>' + content + '</p>');
+                infowindow.open(map,marker);
+            };
+          })(markers[i],content,infowindow));
+
+          google.maps.event.addListener(markers[i],'mouseout', (function(marker,infowindow){ 
+            return function() {
+              infowindow.close();
+            };
+          })(markers[i],infowindow));
+
+          google.maps.event.addListener(markers[i],'click', (function(marker,modal){ 
+            return function() {
+            modal.style.display = "block";
+          }
+          })(markers[i],modal));
+
+        }
       }
 
       function httpGetAsync(url, callback) {
@@ -281,8 +438,12 @@
                               'Error: Your browser doesn\'t support geolocation.');
         infoWindow.open(map);
       }
+      
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBs1N1GVEiPePJmHMxaV0YJCknPg0d_FFI&libraries=places,geometry&callback=initAutocomplete"
          async defer></script>
   </body>
+  <footer>
+      <button id="myBtn">Open Modal</button>
+  </footer>
 </html>
