@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <title>Places Search Box</title>
     <style>
+      body {font-family: Roboto }
       /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
       #map {
@@ -179,7 +180,6 @@
   </head>
   <body>
     <input id="pac-input" class="controls" type="text" placeholder="Search Box">
-    <button id="myBtn">Open Modal</button>
     <div id="map"></div>
 
     <div id="myModal" class="modal">
@@ -200,16 +200,8 @@
       // Get the modal
       var modal = document.getElementById('myModal');
 
-      // Get the button that opens the modal
-      var btn = document.getElementById("myBtn");
-
       // Get the <span> element that closes the modal
       var span = document.getElementsByClassName("close")[0];
-
-      // When the user clicks the button, open the modal 
-      btn.onclick = function() {
-        modal.style.display = "block";
-      }
 
       // When the user clicks on <span> (x), close the modal
       span.onclick = function() {
@@ -418,6 +410,13 @@
               infowindow.close();
             };
           })(markers[i],infowindow));
+
+          google.maps.event.addListener(markers[i],'click', (function(marker,modal){ 
+            return function() {
+            modal.style.display = "block";
+          }
+          })(markers[i],modal));
+
         }
       }
 
@@ -439,12 +438,7 @@
                               'Error: Your browser doesn\'t support geolocation.');
         infoWindow.open(map);
       }
-
-      /*// On click, open the modal and have them select 
-      function handleModalClick(){
-        
-      } */
-
+      
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBs1N1GVEiPePJmHMxaV0YJCknPg0d_FFI&libraries=places,geometry&callback=initAutocomplete"
          async defer></script>
