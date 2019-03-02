@@ -184,7 +184,10 @@
               position: pos
             });      
 
-            console.log(google.maps.geometry.spherical.interpolate(pos_marker.getPosition(), place.geometry.location, 0.5))
+            var midLatLng = google.maps.geometry.spherical.interpolate(pos_marker.getPosition(), place.geometry.location, 0.5);
+            var mid_lat = midLatLng.lat;
+            var mid_lng = midLatLng.lng;
+            var distance = google.maps.geometry.spherical.computeDistanceBetween(pos_marker.getPosition(), place.geometry.location);
 
             if (place.geometry.viewport) {
               // Only geocodes have viewport.
