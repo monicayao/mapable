@@ -176,6 +176,14 @@
       color: white;
     }
 
+    .controls {
+      height: 39px;
+    }
+
+    #time_input {
+      height: 30px;
+    }
+
     </style>
   </head>
   <body>
@@ -231,18 +239,12 @@
           mapTypeId: 'roadmap'
         });
 
-        var infoWindow = new google.maps.InfoWindow;
-
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function(position) {
             pos = {
               lat: position.coords.latitude,
               lng: position.coords.longitude
             };
-
-            infoWindow.setPosition(pos);
-            infoWindow.setContent('Location found.');
-            infoWindow.open(map);
             map.setCenter(pos);
           }, function() {
             handleLocationError(true, infoWindow, map.getCenter());
@@ -269,6 +271,7 @@
         // Set CSS for the control interior
         var controlInput = document.createElement('input');
         controlInput.id = "time_input";
+        controlInput.class = "controls"
         controlInput.type = "number"
         controlInput.step = 0.5
         controlUI.appendChild(controlInput);
