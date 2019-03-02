@@ -70,6 +70,7 @@
         padding: 0 11px 0 13px;
         text-overflow: ellipsis;
         width: 400px;
+        margin-top: 10px;
       }
 
       #pac-input:focus {
@@ -86,6 +87,23 @@
       #target {
         width: 345px;
       }
+
+      #control_ui {
+        background-color: #fff;
+        border: 2px;
+        border-color: #fff;
+        border-style: solid;
+        margin-top: 10px;
+      }
+
+      #control_input {
+        padding-left: 5px;
+        padding-left: 5px;
+        line-height: 36px;
+        font-size: 16px;
+        font-family: 'Roboto,Arial,sans-serif';
+        color: rgb(25,25,25);
+      }
     </style>
   </head>
   <body>
@@ -100,7 +118,7 @@
       // parameter when you first load the API. For example:
       // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
 
-      var pos, dest;
+      var pos, dest, time;
       function initAutocomplete() {
         var map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: -33.8688, lng: 151.2195},
@@ -132,6 +150,30 @@
         var input = document.getElementById('pac-input');
         var searchBox = new google.maps.places.SearchBox(input);
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+        // Create a div to hold the control that is responsible for time input.
+        var controlDiv = document.createElement('div');
+
+        // Set CSS for the control border
+        var controlUI = document.createElement('div');
+        controlUI.id = "control_ui"
+        controlUI.title = 'Enter available time';
+        controlDiv.appendChild(controlUI);
+
+        // Set CSS for the control interior
+        var controlInput = document.createElement('input');
+        controlInput.id = "time_input";
+        controlInput.type = "number"
+        controlInput.step = 0.5
+        controlUI.appendChild(controlInput);
+
+        google.maps.event.addDomListener(controlUI, 'click', function() {
+          time = document.getElementById("time_input").value;
+        });
+
+        controlDiv.index = 1;
+
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(controlDiv);
 
         // Bias the SearchBox results towards current map's viewport.
         map.addListener('bounds_changed', function() {
@@ -177,6 +219,7 @@
               position: place.geometry.location
             }));
 
+            // need the position marker to use with the geometry API
             var pos_marker = new google.maps.Marker({
               map: map,
               icon: icon,
@@ -184,10 +227,13 @@
               position: pos
             });      
 
+            // calculate the mid-point between the current position and destination
             var midLatLng = google.maps.geometry.spherical.interpolate(pos_marker.getPosition(), place.geometry.location, 0.5);
-            var mid_lat = midLatLng.lat;
-            var mid_lng = midLatLng.lng;
-            var distance = google.maps.geometry.spherical.computeDistanceBetween(pos_marker.getPosition(), place.geometry.location);
+            var mid_lat = midLatLng.lat();
+            var mid_lng = midLatLng.lng();
+            // calculate the distance between the current position and destination
+            var distance = google.maps.geometry.spherical.computeDistanceBetween(pos_marker.getPosition(), place.geometry.location)
+            parse_landmark_data(mid_lat, mid_lng, distance / 2)
 
             if (place.geometry.viewport) {
               // Only geocodes have viewport.
@@ -198,6 +244,20 @@
           });
           map.fitBounds(bounds);
         });
+      }
+
+      function parse_landmark_data(lat, lng, radius) {
+        var url = "https://reverse.geocoder.api.here.com/6.2/reversegeocode.json?app_id=EBPohOgad3NzKBTqKvZ5&app_code=bE6FdeBxWGtKTq-RZq6QBA&mode=retrieveLandmarks&prox="+lat+","+lng+","+radius
+        var response = JSON.parse(httpGet(url))
+        var landmarks = response["Response"]["View"][0]["Result"]
+        var len = landmarks.length
+      }
+
+      function httpGet(url) {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open( "GET", url, false ); // false for synchronous request
+        xmlHttp.send( null );
+        return xmlHttp.responseText;
       }
 
       function handleLocationError(browserHasGeolocation, infoWindow, pos) {
