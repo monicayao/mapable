@@ -1,5 +1,6 @@
 {
     "startLocation": "LocName1",
+    "endLocation": "LocName3",
     "startTime": "14:00",
     "totalTime": 180,
     "listOfLocations": {
