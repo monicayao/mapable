@@ -234,7 +234,13 @@
             var mid_lng = midLatLng.lng();
             // calculate the distance between the current position and destination
             var distance = google.maps.geometry.spherical.computeDistanceBetween(pos_marker.getPosition(), place.geometry.location)
-            get_landmark_data(mid_lat, mid_lng, distance / 2)
+            get_landmark_data(mid_lat, mid_lng, distance / 2);
+
+            // reload the view of the map
+            var SW = new google.maps.LatLng(Math.min(pos_marker.getPosition().lat(), place.geometry.location.lat()),Math.min(pos_marker.getPosition().lng(), place.geometry.location.lng()));
+            var NE = new google.maps.LatLng(Math.max(pos_marker.getPosition().lat(), place.geometry.location.lat()),Math.max(pos_marker.getPosition().lng(), place.geometry.location.lng()));
+            bounds = new google.maps.LatLngBounds(SW, NE);
+
 
             if (place.geometry.viewport) {
               // Only geocodes have viewport.
