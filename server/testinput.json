@@ -1,4 +1,6 @@
 {
+    "startLocation": "LocName1",
+    "startTime": "14:00",
     "listOfLocations": [
         ["LocName1", 60],
         ["LocName2", 120],
