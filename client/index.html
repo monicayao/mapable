@@ -181,11 +181,6 @@
       form {
         list-style-type: none;
         width: 100%;
-
-      }
-
-      .test { 
-        background-color: #4d90fe
       }
       
 
@@ -194,21 +189,27 @@
         border-radius: 4px;
       }
 
-      .text_input{
-        height: 35px;
-        border-radius: 4px;
-      }
-
       #time_input {
         height: 30px;
+        width: 60px;
         font-size: 16px;
         text-align: center;
         align-content: center;
         border-radius: 4px;
+        margin-left: 10px;
       }
 
-      div.center { 
-        background-color: #4d90fe
+      #summary_panel {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        background-color: GhostWhite;
+        padding-left: 10px;
+        padding-right: 10px;
+        overflow: scroll;
+        height: 174px;
+        font-size: 15px;
+        line-height: 20px;
+        border-radius: 15px;
       }
 
       button{
@@ -232,6 +233,7 @@
         float: right;
       }
 
+
     </style>
   </head>
   <body>
@@ -254,7 +256,6 @@
         </div>
       </div>
     </div>
-
 
     <script>
 
@@ -286,7 +287,11 @@
 
       var pos, dest, time, map, dest_name;
       var landmark1, landmark2, landmark3, landmark4, landmark5, landmark6, landmark7, landmark8;
+      var directionsService, directionsDisplay;
       function initAutocomplete() {
+        directionsService = new google.maps.DirectionsService;
+        directionsDisplay = new google.maps.DirectionsRenderer;
+
         map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: -33.8688, lng: 151.2195},
           zoom: 13,
@@ -322,6 +327,7 @@
 
         // Create the search box and link it to the UI element.
         var input = document.getElementById('pac-input');
+        document.getElementById('pac-input').value = '';
         var searchBox = new google.maps.places.SearchBox(input);
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
@@ -330,11 +336,21 @@
 
         // Set CSS for the control border
         var controlUI = document.createElement('div');
+<<<<<<< HEAD
         controlUI.style = "background-color:  #4d90fe";
+=======
+        controlUI.id = "time_div"
+>>>>>>> 6c2dd88605cbad60a29dbe989b402e241d0d76e0
         controlUI.textContent = "Enter available time (Hours)";
         controlUI.textContent.fontcolor = "color: #fffffff";
         controlUI.textContent.fontsize = "90";
         controlUI.id = "control_ui"
+<<<<<<< HEAD
+=======
+        controlUI.title = 'Enter available time';
+        controlUI.style.fontSize = '16px';
+        controlUI.style.paddingLeft = '10px';
+>>>>>>> 6c2dd88605cbad60a29dbe989b402e241d0d76e0
         controlDiv.appendChild(controlUI);
 
         // Set CSS for the control interior
@@ -487,7 +503,6 @@
         }
 
         var service = new google.maps.DistanceMatrixService();
-        console.log(places.length)
         service.getDistanceMatrix(
           {
             origins: places,
@@ -539,16 +554,18 @@
       }
 
       function parse_server_output(response, landmarks) {
+        if (document.getElementById("next") != null)
+          document.getElementById("next").remove()
+        create_next_button()
         var paths = []
+        var routes = []
         for (i = 0; i < response.length; i++) {
           var names = response[i];
-          console.log(names)
           var path = []
           for (j = 0; j < names.length; j++) {
             var latlng;
             for (k = 0; k < landmarks.length; k++) {
               if (names[j] == landmarks[k]["name"]) {
-                console.log(names[j])
                 latlng = landmarks[k]["location"]
                 break;
               }
@@ -556,24 +573,58 @@
             path.push(latlng)
           }
           paths.push(path)
+          routes.push(names)
         }
-
-        for (i = 0; i < 1; i++) {
-          var path = paths[i];
-          draw_path(path)
-        }
-      }
-
-      function draw_path(path) {
-        var directionsService = new google.maps.DirectionsService;
-        var directionsDisplay = new google.maps.DirectionsRenderer;
 
         directionsDisplay.setMap(map);
         directionsDisplay.setOptions( { suppressMarkers: true } );
-        calculateAndDisplayRoute(directionsService, directionsDisplay, path);
+
+        var i = 0;
+        if (document.getElementById("summary_panel") != null)
+          document.getElementById("summary_panel").remove()
+        calculateAndDisplayRoute(directionsService, directionsDisplay, paths[i % path.length], routes[i % path.length])
+        var next = document.getElementById("next")
+        google.maps.event.addDomListener(next, 'click', function() {
+          document.getElementById("summary_panel").remove()
+          i++;
+          calculateAndDisplayRoute(directionsService, directionsDisplay, paths[i % paths.length], routes[i % path.length]);
+        });
       }
 
-      function calculateAndDisplayRoute(directionsService, directionsDisplay, path) {
+      function create_next_button() {
+        var controlDiv = document.createElement('div');
+
+        // Set CSS for the control border.
+        var controlUI = document.createElement('div');
+        controlUI.id = "next";
+        controlUI.style.backgroundColor = '#fff';
+        controlUI.style.border = '2px solid #fff';
+        controlUI.style.borderRadius = '3px';
+        controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+        controlUI.style.cursor = 'pointer';
+        controlUI.style.marginBottom = '22px';
+        controlUI.style.marginTop = '10px';
+        controlUI.style.marginRight = '10px';
+        controlUI.style.textAlign = 'center';
+        controlUI.title = 'Click to get the next path';
+        controlDiv.appendChild(controlUI);
+
+        // Set CSS for the control interior.
+        var controlText = document.createElement('div');
+        controlText.style.color = 'rgb(25,25,25)';
+        controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+        controlText.style.fontSize = '16px';
+        controlText.style.lineHeight = '38px';
+        controlText.style.paddingLeft = '5px';
+        controlText.style.paddingRight = '5px';
+        controlText.innerHTML = 'Gimme Anotha!';
+        controlUI.appendChild(controlText);
+
+        controlDiv.index = 1;
+        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(controlDiv);
+      }
+
+      function calculateAndDisplayRoute(directionsService, directionsDisplay, path, route) {
         var waypts = [];
         var checkboxArray = path;
         for (var i = 1; i < checkboxArray.length - 1; i++) {
@@ -592,6 +643,21 @@
         }, function(response, status) {
           if (status === 'OK') {
             directionsDisplay.setDirections(response);
+            var summaryPanel = document.createElement('div');
+            summaryPanel.id = "summary_panel"
+            var summaryText = document.createElement('p');
+            summaryText.id = "summary_text"
+            summaryText.innerHTML = '';
+            // For each route, display summary information.
+            for (var i = 0; i < route.length - 1; i++) {
+              var routeSegment = i + 1;
+              summaryText.innerHTML += '<b>Route Segment: ' + routeSegment +
+                  '</b><br>';
+              summaryText.innerHTML += '<span style="font-style:italic">' + route[i] + '</span> to ';
+              summaryText.innerHTML += '<span style="font-style:italic">' + route[i + 1] + '</span><br><br>';
+            }
+            summaryPanel.appendChild(summaryText)
+            map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(summaryPanel);
           } else {
             window.alert('Directions request failed due to ' + status);
           }
