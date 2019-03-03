@@ -523,6 +523,8 @@
       }
 
       function parse_server_output(response, landmarks) {
+        if (document.getElementById("next") != null)
+          document.getElementById("next").remove()
         create_next_button()
         var paths = []
         var routes = []
@@ -547,6 +549,8 @@
         directionsDisplay.setOptions( { suppressMarkers: true } );
 
         var i = 0;
+        if (document.getElementById("summary_panel") != null)
+          document.getElementById("summary_panel").remove()
         calculateAndDisplayRoute(directionsService, directionsDisplay, paths[i % path.length], routes[i % path.length])
         var next = document.getElementById("next")
         google.maps.event.addDomListener(next, 'click', function() {
@@ -618,8 +622,8 @@
               var routeSegment = i + 1;
               summaryText.innerHTML += '<b>Route Segment: ' + routeSegment +
                   '</b><br>';
-              summaryText.innerHTML += route[i] + ' to ';
-              summaryText.innerHTML += route[i + 1] + '<br><br>';
+              summaryText.innerHTML += '<span style="font-style:italic">' + route[i] + '</span> to ';
+              summaryText.innerHTML += '<span style="font-style:italic">' + route[i + 1] + '</span><br><br>';
             }
             summaryPanel.appendChild(summaryText)
             map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(summaryPanel);
