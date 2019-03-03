@@ -333,24 +333,26 @@
 
         // Create a div to hold the control that is responsible for time input.
         var controlDiv = document.createElement('div');
+        controlDiv.style.position = 'flex';
+        controlDiv.style.alignContent = 'center';
+        controlDiv.style.justifyContent = 'center';
 
         // Set CSS for the control border
         var controlUI = document.createElement('div');
-<<<<<<< HEAD
-        controlUI.style = "background-color:  #4d90fe";
-=======
         controlUI.id = "time_div"
->>>>>>> 6c2dd88605cbad60a29dbe989b402e241d0d76e0
         controlUI.textContent = "Enter available time (Hours)";
-        controlUI.textContent.fontcolor = "color: #fffffff";
-        controlUI.textContent.fontsize = "90";
         controlUI.id = "control_ui"
-<<<<<<< HEAD
-=======
         controlUI.title = 'Enter available time';
-        controlUI.style.fontSize = '16px';
         controlUI.style.paddingLeft = '10px';
->>>>>>> 6c2dd88605cbad60a29dbe989b402e241d0d76e0
+        controlUI.style.paddingTop = '7px';
+        controlUI.style.marginBottom = '-7px'
+        controlUI.style.height = '30px';
+        controlUI.style.alignContent = 'center';
+        controlUI.style.justifyContent = 'center';
+        controlUI.style.textAlign = 'center';
+        controlUI.style.fontSize = '17px'
+
+        //controlUI.style.margin = 'auto';
         controlDiv.appendChild(controlUI);
 
         // Set CSS for the control interior
@@ -358,6 +360,10 @@
         controlInput.id = "time_input"
         controlInput.class = "controls"
         controlInput.type = "number"
+        controlInput.style.marginLeft = "10px"
+        controlInput.style.alignContent = "center"
+        controlInput.style.height = '30px';
+        controlInput.style.marginTop = '-6px';
         controlInput.min = 0
         controlInput.step = 0.5
         controlInput.defaultValue = 2
@@ -735,6 +741,7 @@
         for (var i = 1; i < landmarks.length - 1; i++) {
           window[`landmark${i}`] = document.getElementById(`landmark${i}`).value;
         }
+        modal.style.display = "none";
       }
 
       function httpGetAsync(url, callback) {
