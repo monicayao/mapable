@@ -5,32 +5,60 @@ import queue
 import pprint
 import copy
 import os
+import requests
 
+# half an hour in seconds
+timeBetweenMatrices = 1 * 60 * 60
 PORT = 8000
 pp = pprint.PrettyPrinter()
 
-# The path algorithm
-def pathAlg(jsonObj):
-    startNode = jsonObj["startLocation"]
-    endNode = jsonObj["endLocation"]
-    startHourStr = jsonObj["startTime"]
-    totalTime = jsonObj["totalTime"]
-    waitTimes = jsonObj["listOfLocations"]
+def calculateTimeToLoc(departureTimeFromStart, source, dest, distanceMatrices):
+    startIndex = departureTimeFromStart // timeBetweenMatrices
+    remainder = departureTimeFromStart % timeBetweenMatrices
+    endIndex = startIndex + 1
 
-    distanceMatrix = {}
-    for source, dest, distance in jsonObj["distanceInfo"]:
-        if source not in distanceMatrix:
-            distanceMatrix[source] = {}
-        distanceMatrix[source][dest] = distance
+    startProportion = (timeBetweenMatrices - remainder) / timeBetweenMatrices
+    endProportion = 1 - startProportion
 
-        source, dest = dest, source
-        if source not in distanceMatrix:
-            distanceMatrix[source] = {}
-        distanceMatrix[source][dest] = distance
+    durationAtStartTime = distanceMatrices[startIndex][source][dest]
+    durationAtEndTime = distaceMatrices[endIndex][source][dest]
+
+    return int(durationAtStartTime * startProportion + \
+        durationAtEndTime * endProportion)
+
+def calculatePath(startNode, endNode, startTime, totalTime, waitTimes):
+    placesToVisit = list(waitTimes.keys())
+
+    # distance matrices, each some time constant apart
+    distanceMatrices = []
+
+    # get matrix for every 30 mins, starting now, ending sometime before endTime
+    for i in range(int(totalTime / timeBetweenMatrices) + 1):
+        distanceMatrices.append(getTimeDelimitedMatricesFromGoogle( \
+            startTime + timeBetweenMatrices * i, placesToVisit))
+
+    pp.pprint(distanceMatrices)
+
+    # distanceMatrix = {}
+    # for source, dest, distance in jsonObj["distanceInfo"]:
+    #     if source not in distanceMatrix:
+    #         distanceMatrix[source] = {}
+    #     distanceMatrix[source][dest] = distance
+    #
+    #     source, dest = dest, source
+    #     if source not in distanceMatrix:
+    #         distanceMatrix[source] = {}
+    #     distanceMatrix[source][dest] = distance
 
     # pp.pprint(distanceMatrix)
     nodes = list(waitTimes.keys())
-    paths = uniformCostSearch(startNode, endNode, waitTimes, totalTime, distanceMatrix, 10)
+    paths = uniformCostSearch(startNode,
+        endNode,
+        waitTimes,
+        totalTime,
+        distanceMatrices,
+        20,
+        placesToVisit)
 
     pp.pprint(paths)
 
@@ -38,9 +66,49 @@ def pathAlg(jsonObj):
 
     return paths
 
+# The path algorithm
+def pathAlg(jsonObj):
+    startNode = jsonObj["startLocation"]
+    endNode = jsonObj["endLocation"]
+    #TODO: assume that it uses seconds
+    totalTime = jsonObj["totalTime"]
+    waitTimes = jsonObj["listOfLocations"]
+
+
+
+# returns list of distance matrices
+# assumes startTime is in seconds - in unix time
+def getTimeDelimitedMatricesFromGoogle(startTime, places):
+    url="https://maps.googleapis.com/maps/api/distancematrix/json"
+
+    start = '|'.join(places)
+    end = '|'.join(places)
+    my_mode = "driving"  # walking, biking
+    key = "AIzaSyBs1N1GVEiPePJmHMxaV0YJCknPg0d_FFI"
+    inputs = { "origins":start, "destinations":end, "mode":my_mode, "key":key, "departure_time": startTime }
+
+    result = requests.get(url,params=inputs)
+    data = result.json()
+
+    pp.pprint(data)
+
+    distanceMatrix = {}
+    numPlaces = len(places)
+    for rowI, rowLocation in zip(range(len(places)), places):
+        distanceMatrix[rowLocation] = {}
+        for colI, colLocation in zip(range(len(places)), places):
+            distanceMatrix[rowLocation][colLocation] = \
+                data["rows"][rowI]["elements"][colI]["duration"]["value"]
+
+    return distanceMatrix
+
 
 # returns lists of lists of paths from root
-def uniformCostSearch(startLoc, endLoc, waitTimes, maxTime, distanceMatrix, numPaths):
+def uniformCostSearch(
+    startLoc, endLoc, waitTimes,
+    maxTime, distanceMatrices, numPaths,
+    places):
+
     visited = set()
 
     priorityQueue = queue.PriorityQueue()
@@ -74,9 +142,12 @@ def uniformCostSearch(startLoc, endLoc, waitTimes, maxTime, distanceMatrix, numP
             continue
 
         # we want to look at each child, so long as it has not been visited
-        for nextLocation, timeToLoc in distanceMatrix[location].items():
+        for nextLocation in places :
+        # for nextLocation, timeToLoc in distanceMatrices[location].items():
             if nextLocation in path:
                 continue
+
+            timeToLoc = calculateTimeToLoc(timeTaken, location, nextLocation, distanceMatrices)
 
             # update path with the location we're at now
             newPath = copy.deepcopy(path)
