@@ -218,6 +218,8 @@
           </div>
         </div>
       </div>
+    </div>
+
 
     <script>
 
@@ -248,7 +250,7 @@
       // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
 
       var pos, dest, time, map, dest_name;
-      var landmark0, landmark1, landmark2, landmark3, landmark4, landmark5, landmark6, landmark7, landmark8, landmark9;
+      var landmark1, landmark2, landmark3, landmark4, landmark5, landmark6, landmark7, landmark8;
       function initAutocomplete() {
         map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: -33.8688, lng: 151.2195},
@@ -258,12 +260,22 @@
 
         time = 2
 
+        var infoWindow = new google.maps.InfoWindow;
+
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function(position) {
             pos = {
               lat: position.coords.latitude,
               lng: position.coords.longitude
             };
+
+            var pos_marker = new google.maps.Marker({
+              map: map,
+              icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+              title: "Current Position",
+              position: pos
+            }); 
+
             map.setCenter(pos);
           }, function() {
             handleLocationError(true, infoWindow, map.getCenter());
@@ -335,11 +347,11 @@
               return;
             }
             var icon = {
-              url: place.icon,
-              size: new google.maps.Size(71, 71),
+              url: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
+              size: new google.maps.Size(75, 75),
               origin: new google.maps.Point(0, 0),
               anchor: new google.maps.Point(17, 34),
-              scaledSize: new google.maps.Size(25, 25)
+              scaledSize: new google.maps.Size(30, 30)
             };
 
             // Create a marker for each place.
@@ -353,7 +365,7 @@
             // need the position marker to use with the geometry API
             var pos_marker = new google.maps.Marker({
               map: map,
-              icon: icon,
+              icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
               title: place.name,
               position: pos
             });     
@@ -364,15 +376,14 @@
             var mid_lng = midLatLng.lng();
             // calculate the distance between the current position and destination
             var distance = google.maps.geometry.spherical.computeDistanceBetween(pos_marker.getPosition(), place.geometry.location)
-            get_landmark_data(mid_lat, mid_lng, distance / 2);
-
             dest_name = place.name;
+            dest = {lat: place.geometry.location.lat(), lng: place.geometry.location.lng()}
+            get_landmark_data(mid_lat, mid_lng, distance / 2);
 
             // reload the view of the map
             var SW = new google.maps.LatLng(Math.min(pos_marker.getPosition().lat(), place.geometry.location.lat()),Math.min(pos_marker.getPosition().lng(), place.geometry.location.lng()));
             var NE = new google.maps.LatLng(Math.max(pos_marker.getPosition().lat(), place.geometry.location.lat()),Math.max(pos_marker.getPosition().lng(), place.geometry.location.lng()));
             bounds = new google.maps.LatLngBounds(SW, NE);
-
 
             if (place.geometry.viewport) {
               // Only geocodes have viewport.
@@ -390,13 +401,20 @@
         var clientid = "5FZY1HN40ZTMOX4K42R25CVKCD5NLTH5ZFSUAFGFVE4GZYTQ";
         var clientsecret = "DQRBTVAPMUVKL5LWL515C0HKMPPD3WCKKRD4DATNRS2JM2PD";
         var utc = new Date().toJSON().slice(0,10).replace(/-/g,'');
-        var url = `https://api.foursquare.com/v2/venues/explore?client_id=${clientid}&client_secret=${clientsecret}&ll=${lat},${lng}&radius=${radius}&limit=10&query=popular+with+visitors&v=${utc}`
+        var url = `https://api.foursquare.com/v2/venues/explore?client_id=${clientid}&client_secret=${clientsecret}&ll=${lat},${lng}&radius=${radius}&limit=8&query=popular+with+visitors&v=${utc}`
         httpGetAsync(url, parse_landmark_data)
       }
 
       function parse_landmark_data(response) {
         var json_response = (JSON.parse(response))["response"]["groups"][0]["items"]
         landmarks = []
+
+        var current_position = {
+          "name": "Current Location",
+          "location": pos
+        }
+
+        landmarks.push(current_position)
 
         for (i = 0; i < json_response.length; i++) {
             var entry = json_response[i]["venue"];
@@ -412,6 +430,14 @@
             }
             landmarks.push(landmark)
         }
+
+        var destination = {
+          "name": dest_name,
+          "location": dest
+        }
+
+        landmarks.push(destination)
+
         place_landmark_markers(landmarks)
         loadList(landmarks)
         create_distance_matrix(landmarks)
@@ -424,6 +450,7 @@
         }
 
         var service = new google.maps.DistanceMatrixService();
+        console.log(places.length)
         service.getDistanceMatrix(
           {
             origins: places,
@@ -450,11 +477,12 @@
             server_input["totalTime"] = time * 60;
 
             var locations = {}
-            locations["Current Location"] = 0;
-            for (i = 0; i < landmarks.length; i++) {
-              locations[landmarks[i]["name"]] = 30;
+            locations[landmarks[0]["name"]] = 0;
+            for (i = 1; i < landmarks.length - 1; i++) {
+              var value = window[`landmark${i}`];
+              locations[landmarks[i]["name"]] = parseInt(value);
             }
-            locations[dest_name.toString()] = 0;
+            locations[landmarks[landmarks.length - 1]["name"]] = 0;
             server_input["listOfLocations"] = locations;
 
             var distance_info = []
@@ -468,25 +496,80 @@
               }
             }
             server_input["distanceInfo"] = distance_info
-            console.log(server_input)
-            httpPostAsync(server_input, parse_server_output)
+            httpPostAsync(server_input, parse_server_output, landmarks)
           }
         }
       }
 
-      function parse_server_output(response) {
-        console.log(response);
+      function parse_server_output(response, landmarks) {
+        var paths = []
+        for (i = 0; i < response.length; i++) {
+          var names = response[i];
+          console.log(names)
+          var path = []
+          for (j = 0; j < names.length; j++) {
+            var latlng;
+            for (k = 0; k < landmarks.length; k++) {
+              if (names[j] == landmarks[k]["name"]) {
+                console.log(names[j])
+                latlng = landmarks[k]["location"]
+                break;
+              }
+            }
+            path.push(latlng)
+          }
+          paths.push(path)
+        }
+
+        for (i = 0; i < 1; i++) {
+          var path = paths[i];
+          draw_path(path)
+        }
+      }
+
+      function draw_path(path) {
+        var directionsService = new google.maps.DirectionsService;
+        var directionsDisplay = new google.maps.DirectionsRenderer;
+
+        directionsDisplay.setMap(map);
+        directionsDisplay.setOptions( { suppressMarkers: true } );
+        calculateAndDisplayRoute(directionsService, directionsDisplay, path);
+      }
+
+      function calculateAndDisplayRoute(directionsService, directionsDisplay, path) {
+        var waypts = [];
+        var checkboxArray = path;
+        for (var i = 1; i < checkboxArray.length - 1; i++) {
+          waypts.push({
+            location: checkboxArray[i],
+            stopover: true
+          });
+        }
+
+        directionsService.route({
+          origin: path[0],
+          destination: path[path.length - 1],
+          waypoints: waypts,
+          optimizeWaypoints: true,
+          travelMode: 'DRIVING'
+        }, function(response, status) {
+          if (status === 'OK') {
+            directionsDisplay.setDirections(response);
+          } else {
+            window.alert('Directions request failed due to ' + status);
+          }
+        });
       }
 
       function place_landmark_markers(landmarks) {
         var markers = [];
-        for (i = 0; i < landmarks.length; i++) {
+        for (i = 1; i < landmarks.length - 1; i++) {
           markers.push(new google.maps.Marker({position: landmarks[i]["location"], map: map}));
         }
 
         for (i = 0; i < markers.length; i++) {
           var infowindow = new google.maps.InfoWindow;
-          var content = landmarks[i]["name"]
+          var content = landmarks[i + 1]["name"]
 
           google.maps.event.addListener(markers[i],'mouseover', (function(marker,content,infowindow){ 
             return function() {
@@ -512,7 +595,7 @@
       // render the list for the modal 
       var form = document.querySelector("form");
       function loadList(landmarks){
-        for (var i = 0; i < landmarks.length; i++) {
+        for (var i = 1; i < landmarks.length - 1; i++) {
 
           var listItem = document.createElement("li");
 
@@ -562,15 +645,15 @@
         xmlHttp.send( null );  
       }
 
-      function httpPostAsync(server_input, callback) {
+      function httpPostAsync(server_input, callback, landmarks) {
         var xhr = new XMLHttpRequest();
-        var url = "http://206.189.219.17:8000";
+        var url = "http://localhost:8000/";
         xhr.open("POST", url, true);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4 && xhr.status === 200) {
-                var json = JSON.parse(xhr.responseText);
+                callback(JSON.parse(xhr.responseText), landmarks);
             }
         };
         var data = JSON.stringify(server_input);
