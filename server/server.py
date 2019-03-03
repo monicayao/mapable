@@ -94,11 +94,15 @@ def unwrapPriorityQueue(goodPaths):
     return paths
 
 class HTTPHandler(http.server.BaseHTTPRequestHandler):
+
+    def end_headers(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        http.server.BaseHTTPRequestHandler.end_headers(self)
+
     # every HTTP response needs a header
     def _set_headers(self):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
 
     def do_GET(self):
