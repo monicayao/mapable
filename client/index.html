@@ -111,7 +111,7 @@
       display: none; /* Hidden by default */
       position: fixed; /* Stay in place */
       z-index: 1; /* Sit on top */
-      padding-top: 100px; /* Location of the box */
+      padding-top: 80px; /* Location of the box */
       left: 0;
       top: 0;
       width: 100%; /* Full width */
@@ -176,7 +176,7 @@
       color: white;
     }
     
-    ul {
+    form {
       list-style-type: none;
       width: 500px;
     }
@@ -195,8 +195,11 @@
             <h2>Choose Times</h2>
           </div>
           <div class="modal-body">
-            <ul> 
-            </ul>
+            <form > 
+            </form>
+            <button onclick="updateValues(landmarks)">
+              Save
+            </button>
           </div>
         </div>
       </div>
@@ -230,6 +233,7 @@
       // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
 
       var pos, dest, time, map, dest_name;
+      var landmark0, landmark1, landmark2, landmark3, landmark4, landmark5, landmark6, landmark7, landmark8, landmark9;
       function initAutocomplete() {
         map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: -33.8688, lng: 151.2195},
@@ -276,6 +280,7 @@
         var controlInput = document.createElement('input');
         controlInput.id = "time_input";
         controlInput.type = "number"
+        controlInput.min = 0
         controlInput.step = 0.5
         controlUI.appendChild(controlInput);
 
@@ -394,9 +399,7 @@
             landmarks.push(landmark)
         }
         place_landmark_markers(landmarks)
-<<<<<<< HEAD
         loadList(landmarks)
-=======
         create_distance_matrix(landmarks)
       }
 
@@ -452,7 +455,6 @@
             console.log(server_input)
           }
         }
->>>>>>> 68842519b186b388dd2ce2eeacebbf713c49e443
       }
 
       function place_landmark_markers(landmarks) {
@@ -486,15 +488,45 @@
         }
       }
 
-      var ul = document.querySelector("ul");
+      // render the list for the modal 
+      var form = document.querySelector("form");
       function loadList(landmarks){
         for (var i = 0; i < landmarks.length; i++) {
 
           var listItem = document.createElement("li");
-          listItem.textContent = landmarks[i]["name"];
-          
           var inputBox = document.createElement("input");
-          ul.appendChild(listItem);
+          listItem.textContent = landmarks[i]["name"];
+
+          // Create a div to hold the control that is responsible for input.
+          var controlDiv = document.createElement('div');
+
+          // Set CSS for the control border
+          var controlUI = document.createElement('div'); 
+          controlUI.id = "control_ui" + i
+          controlUI.title = 'Enter available time';
+          controlDiv.appendChild(controlUI);
+
+          // Set CSS for the control interior
+          var controlInput = document.createElement("input");
+          controlInput.id = `landmark` + i;
+          controlInput.type = "number"
+          controlInput.min = 0
+          controlInput.step = 1
+          controlInput.defaultValue = 15
+          controlUI.appendChild(controlInput);
+      
+          listItem.appendChild(controlDiv);
+
+          form.appendChild(listItem);
+
+          window[`landmark${i}`] = document.getElementById(`landmark${i}`).value;         
+        }
+      }
+
+      // update the values of landmarks if button is pressed
+      function updateValues(landmarks){
+        for (var i = 0; i < landmarks.length; i++) {
+          window[`landmark${i}`] = document.getElementById(`landmark${i}`).value;
         }
       }
 
