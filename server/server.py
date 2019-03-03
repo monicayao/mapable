@@ -98,6 +98,7 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
     def _set_headers(self):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
 
     def do_GET(self):
@@ -114,6 +115,7 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         print("received POST")
+        self._set_headers()
 
         content_len = int(self.headers.get('Content-Length'))
         post_body = self.rfile.read(content_len).decode('utf-8')
@@ -122,7 +124,7 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
 
         result = pathAlg(input_obj)
 
-        self._set_headers()
+
         response = result
         self.wfile.write(json.dumps(response).encode())
 
