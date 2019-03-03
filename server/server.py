@@ -4,6 +4,7 @@ import json
 import queue
 import pprint
 import copy
+import os
 
 PORT = 8000
 pp = pprint.PrettyPrinter()
@@ -35,7 +36,7 @@ def pathAlg(jsonObj):
 
     paths = [path for cost, path in list(reversed(paths))]
 
-    return paths[0]
+    return paths
 
 
 # returns lists of lists of paths from root
@@ -94,26 +95,35 @@ def unwrapPriorityQueue(goodPaths):
     return paths
 
 class HTTPHandler(http.server.BaseHTTPRequestHandler):
+
+    def end_headers(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        http.server.BaseHTTPRequestHandler.end_headers(self)
+
     # every HTTP response needs a header
-    def _set_headers(self):
+    def _set_headers(self, type):
         self.send_response(200)
-        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Content-type',type)
         self.end_headers()
 
     def do_GET(self):
         print("received GET")
 
-        self._set_headers()
-        response = "We do not support GET."
+        self._set_headers('text/html')
 
-        # encode in order to send json
-        self.wfile.write(json.dumps(response).encode())
+        indexPath = os.path.join('..', 'client', 'index.html')
+        indexFile = open(indexPath)
+
+        self.wfile.write(indexFile.read().encode())
+        indexFile.close()
 
     def do_HEAD(self):
         self._set_headers()
 
     def do_POST(self):
         print("received POST")
+        self._set_headers('application/json')
 
         content_len = int(self.headers.get('Content-Length'))
         post_body = self.rfile.read(content_len).decode('utf-8')
@@ -122,7 +132,6 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
 
         result = pathAlg(input_obj)
 
-        self._set_headers()
         response = result
         self.wfile.write(json.dumps(response).encode())
 
