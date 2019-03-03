@@ -191,24 +191,25 @@
 
     #time_input {
       height: 30px;
+      width: 60px;
       font-size: 16px;
       text-align: center;
       align-content: center;
       border-radius: 4px;
+      margin-left: 10px;
     }
 
-    #right-panel {
-      font-family: 'Roboto','sans-serif';
-      line-height: 30px;
-      padding-left: 10px;
-    }
-
-    #directions-panel {
+    #summary_panel {
       margin-top: 10px;
-      background-color: #FFEE77;
-      padding: 10px;
+      margin-bottom: 10px;
+      background-color: GhostWhite;
+      padding-left: 10px;
+      padding-right: 10px;
       overflow: scroll;
       height: 174px;
+      font-size: 15px;
+      line-height: 20px;
+      border-radius: 15px;
     }
 
     </style>
@@ -313,9 +314,12 @@
 
         // Set CSS for the control border
         var controlUI = document.createElement('div');
+        controlUI.id = "time_div"
         controlUI.textContent = "Enter available time (Hours)";
         controlUI.id = "control_ui"
         controlUI.title = 'Enter available time';
+        controlUI.style.fontSize = '16px';
+        controlUI.style.paddingLeft = '10px';
         controlDiv.appendChild(controlUI);
 
         // Set CSS for the control interior
@@ -546,6 +550,7 @@
         calculateAndDisplayRoute(directionsService, directionsDisplay, paths[i % path.length], routes[i % path.length])
         var next = document.getElementById("next")
         google.maps.event.addDomListener(next, 'click', function() {
+          document.getElementById("summary_panel").remove()
           i++;
           calculateAndDisplayRoute(directionsService, directionsDisplay, paths[i % paths.length], routes[i % path.length]);
         });
@@ -603,6 +608,21 @@
         }, function(response, status) {
           if (status === 'OK') {
             directionsDisplay.setDirections(response);
+            var summaryPanel = document.createElement('div');
+            summaryPanel.id = "summary_panel"
+            var summaryText = document.createElement('p');
+            summaryText.id = "summary_text"
+            summaryText.innerHTML = '';
+            // For each route, display summary information.
+            for (var i = 0; i < route.length - 1; i++) {
+              var routeSegment = i + 1;
+              summaryText.innerHTML += '<b>Route Segment: ' + routeSegment +
+                  '</b><br>';
+              summaryText.innerHTML += route[i] + ' to ';
+              summaryText.innerHTML += route[i + 1] + '<br><br>';
+            }
+            summaryPanel.appendChild(summaryText)
+            map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(summaryPanel);
           } else {
             window.alert('Directions request failed due to ' + status);
           }
