@@ -113,7 +113,7 @@
       display: none; /* Hidden by default */
       position: fixed; /* Stay in place */
       z-index: 1; /* Sit on top */
-      padding-top: 80px; /* Location of the box */
+      padding-top: 100px; /* Location of the box */
       left: 0;
       top: 0;
       width: 100%; /* Full width */
@@ -313,6 +313,7 @@
 
         // Set CSS for the control border
         var controlUI = document.createElement('div');
+        controlUI.textContent = "Enter available time (Hours)";
         controlUI.id = "control_ui"
         controlUI.title = 'Enter available time';
         controlDiv.appendChild(controlUI);
@@ -645,14 +646,13 @@
         for (var i = 1; i < landmarks.length - 1; i++) {
 
           var listItem = document.createElement("li");
-          var inputBox = document.createElement("input");
-          listItem.textContent = landmarks[i]["name"];
 
           // Create a div to hold the control that is responsible for input.
           var controlDiv = document.createElement('div');
 
           // Set CSS for the control border
           var controlUI = document.createElement('div'); 
+          controlUI.textContent = landmarks[i]["name"];
           controlUI.id = "control_ui" + i
           controlUI.title = 'Enter available time';
           controlDiv.appendChild(controlUI);
@@ -669,9 +669,10 @@
           listItem.appendChild(controlDiv);
 
           form.appendChild(listItem);
-
+      
           window[`landmark${i}`] = document.getElementById(`landmark${i}`).value;         
         }
+        console.log(form)
       }
 
       // update the values of landmarks if button is pressed
