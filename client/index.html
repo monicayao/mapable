@@ -527,7 +527,36 @@
           }
           else {
             var rows = response["rows"];
-            server_input(rows, landmarks)
+            server_input = {}
+            server_input["startLocation"] = "Current Location";
+            server_input["endLocation"] = String(dest_name);
+
+            var today = new Date();
+            var start_time = today.getHours() + ":" + today.getMinutes();
+            server_input["startTime"] = start_time;
+            server_input["totalTime"] = time * 60;
+
+            var locations = {}
+            locations[landmarks[0]["name"]] = 0;
+            for (i = 1; i < landmarks.length - 1; i++) {
+              var value = window[`landmark${i}`];
+              locations[landmarks[i]["name"]] = parseInt(value);
+            }
+            locations[landmarks[landmarks.length - 1]["name"]] = 0;
+            server_input["listOfLocations"] = locations;
+
+            var distance_info = []
+            for (i = 0; i < landmarks.length; i++) {
+              for (j = 0; j < landmarks.length; j++) {
+                if (i != j) {
+                  var duration = parseInt(rows[i]["elements"][j]["duration"]["text"].split(" ")[0]);
+                  var entry = [landmarks[i]["name"], landmarks[j]["name"], duration]
+                  distance_info.push(entry)
+                }
+              }
+            }
+            server_input["distanceInfo"] = distance_info
+            httpPostAsync(server_input, parse_server_output, landmarks)
             google.maps.event.addDomListener(document.getElementById("form_button"), 'click', (function(rows, landmarks) {
               return function() {
                 server_input = {}
@@ -599,39 +628,6 @@
             })(rows, landmarks))
           }
         }
-      }
-
-      function server_input(rows, landmarks) {
-        server_input = {}
-        server_input["startLocation"] = "Current Location";
-        server_input["endLocation"] = String(dest_name);
-
-        var today = new Date();
-        var start_time = today.getHours() + ":" + today.getMinutes();
-        server_input["startTime"] = start_time;
-        server_input["totalTime"] = time * 60;
-
-        var locations = {}
-        locations[landmarks[0]["name"]] = 0;
-        for (i = 1; i < landmarks.length - 1; i++) {
-          var value = window[`landmark${i}`];
-          locations[landmarks[i]["name"]] = parseInt(value);
-        }
-        locations[landmarks[landmarks.length - 1]["name"]] = 0;
-        server_input["listOfLocations"] = locations;
-
-        var distance_info = []
-        for (i = 0; i < landmarks.length; i++) {
-          for (j = 0; j < landmarks.length; j++) {
-            if (i != j) {
-              var duration = parseInt(rows[i]["elements"][j]["duration"]["text"].split(" ")[0]);
-              var entry = [landmarks[i]["name"], landmarks[j]["name"], duration]
-              distance_info.push(entry)
-            }
-          }
-        }
-        server_input["distanceInfo"] = distance_info
-        httpPostAsync(server_input, parse_server_output, landmarks)
       }
 
       function parse_server_output(response, landmarks) {
