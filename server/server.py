@@ -137,7 +137,8 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     dirname = os.path.dirname(__file__)
-    os.chdir(dirname)
+    if dirname != '':
+        os.chdir(dirname)
 
     with socketserver.TCPServer(("", PORT), HTTPHandler) as httpd:
         print("serving at port", PORT)
