@@ -136,6 +136,9 @@ class HTTPHandler(http.server.BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(response).encode())
 
 if __name__ == "__main__":
+    dirname = os.path.dirname(__file__)
+    os.chdir(dirname)
+
     with socketserver.TCPServer(("", PORT), HTTPHandler) as httpd:
         print("serving at port", PORT)
         httpd.serve_forever()
