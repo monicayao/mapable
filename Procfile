@@ -1,1 +1,1 @@
-web: ./server/server.py
+web: python3.7 ./server/server.py
