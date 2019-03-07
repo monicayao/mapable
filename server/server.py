@@ -6,7 +6,7 @@ import pprint
 import copy
 import os
 
-PORT = 8000
+PORT = os.environ.get("PORT", "8000")
 pp = pprint.PrettyPrinter()
 
 # The path algorithm
